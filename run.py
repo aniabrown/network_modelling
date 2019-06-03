@@ -34,7 +34,7 @@ def run2IslandMultiPairSim(verbose=False):
         # nranks/2 away
         messageModel.setPairedMessages(job)
         messageModel.setBandwidths(cluster)
-        if verbose
+        if verbose:
             print messageModel
 
         # calculate total bandwidth 
