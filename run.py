@@ -1,16 +1,15 @@
 from networkModel import Cluster, Message, MessageModel, Job
 from math import log
 
-def timeMessages(messages, data=4):
-    totalTime = 0
-    totalData = 0
+def timeMessages(messages, data=32):
+    times = []
+    bandwidths = []
     for message in messages:
        messageTime = data/float(message.bandwidth)
-       totalTime = totalTime + messageTime
-       totalData = totalData + data
+       times.append(messageTime)
+       bandwidths.append(message.bandwidth)
 
-    bandwidth = totalData/totalTime
-    return bandwidth
+    return max(times)
 
 def run2IslandMultiPairSim(verbose=False):
     print "\n ------------- Two island simultaneous pairs ---------- "
@@ -38,16 +37,22 @@ def run2IslandMultiPairSim(verbose=False):
             print messageModel
 
         # calculate total bandwidth 
-        bandwidth = timeMessages(messageModel.messages)
-        print str(nr) + ", " + str(bandwidth)
+        time = timeMessages(messageModel.messages)
+        print str(nr) + ", " + str(time)
 
-def runQuestDistributedSim(numIslands=3, numRanks=64, verbose=False): 
+def runQuestDistributedSim(numIslands=3, numRanks=64, verbose=False, allocation="random"): 
     print "\n ------------- Many island QuEST sim ---------- "
     cluster = Cluster(numIslands=numIslands, nodesPerIsland=32)
     print cluster
 
     job = Job(numRanks=numRanks)
-    job.allocateRandom(cluster)
+    if allocation == "random":
+    	job.allocateRandom(cluster)
+    elif allocation == "packed":
+        job.allocatePacked(cluster)
+    else:
+        print "ERROR: Allocation type not recognised"
+        return
     print job
     
     messageModel = MessageModel()
@@ -56,6 +61,7 @@ def runQuestDistributedSim(numIslands=3, numRanks=64, verbose=False):
     print "Distributed rotation qubit, Bandwidth (GB/s)"
 
     # iterate over distributed qubit number, where the first distributed qubit is called qubit 0
+    print "qubit, time(s), bandwidth(GB/s)"
     for distributedQubit in range(int(log(numRanks, 2))):
         # calculate bandwidth per message when ranks are paired off between nodes
         # in the Quest pattern for distributed qubits
@@ -66,14 +72,19 @@ def runQuestDistributedSim(numIslands=3, numRanks=64, verbose=False):
             print messageModel
 
         # calculate total bandwidth
-        bandwidth = timeMessages(messageModel.messages)
-        print str(distributedQubit) + ", " + str(bandwidth)
+        time = timeMessages(messageModel.messages)
+        print str(distributedQubit) + ", " + str(time)
 
 
 def main():
-    run2IslandMultiPairSim()
+    #run2IslandMultiPairSim()
 
-    runQuestDistributedSim(numIslands=3, numRanks=64)
+    #runQuestDistributedSim(numIslands=3, numRanks=32)
+    
+    runQuestDistributedSim(numIslands=2, numRanks=64, allocation="packed")
+
+    
+    
 
 
 if __name__ == "__main__":

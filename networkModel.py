@@ -160,7 +160,7 @@ class Job:
         Host IDs are integers [0:numIslands*nodesPerIsland] 
         """
 
-        hosts = range(job.numRanks)
+        hosts = range(self.numRanks)
         self.hosts = hosts
 
     def allocateScattered(self, cluster):
